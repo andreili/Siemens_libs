@@ -29,29 +29,31 @@ bool Proto_3964R_RK512::send_db(uint8_t db_idx, uint8_t db_offset, uint16_t leng
     req_header->data_length = swap_(length);
     req_header->sync_flags = RK512_SYNC_FLAGS_NO_FLAGS;
     req_header->cpu_addr = RK512_CPU_ADDR_NO_FLAGS_ANY;
-    m_send_buf[sizeof(rk512_request_header_t)] = RK512_3964R_DLE;
-    m_send_buf[sizeof(rk512_request_header_t) + 1] = RK512_3964R_ETX;
 
+    // convert LE to BE
     int l = length * 2;
-    for (int i=0 ; i<l ; i+=2)
-        *((uint16_t*)&m_send_buf[i + sizeof(rk512_reply_header_t)]) = swap_(data[i]);
+    for (int i=0 ; i<l ; ++i)
+        *((uint16_t*)&m_send_buf[i*2 + sizeof(rk512_request_header_t)]) = swap_(data[i]);
+
+    m_send_buf[sizeof(rk512_request_header_t) + length * 2] = RK512_3964R_DLE;
+    m_send_buf[sizeof(rk512_request_header_t) + length * 2 + 1] = RK512_3964R_ETX;
     calc_bcc(m_send_buf, sizeof(rk512_request_header_t) + length * 2 + 2);
 
     if (!m_serial->send(m_send_buf, sizeof(rk512_request_header_t) + length * 2 + 3))
         return false;
     if (get_dle() != RK512_3964R_DLE)
-        return false;*/
+        return false;
 
-    /*m_state = RK512_RECV_ACTIVE;
+    m_state = RK512_RECV_ACTIVE;
 
     if (!get_start())
         return false;
-    if (!send_ack())
+    if (!send_dle())
         return false;
     if (!recv_reply(0))
         return false;
-    if (!send_ack())
-        return false;*/
+    if (!send_dle())
+        return false;
 
     m_state = RK512_CONNECTED;
 
