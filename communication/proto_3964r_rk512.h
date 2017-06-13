@@ -103,8 +103,6 @@ private:
     uint8_t             m_send_buf[RK512_BUF_SIZE];
     uint8_t             m_recv_buf[RK512_BUF_SIZE];
 
-    void check_incompleted();
-
     void calc_bcc(uint8_t* buf, uint32_t len);
     bool check_bcc(uint8_t* buf, uint32_t len, uint8_t bcc_check);
     bool connect();

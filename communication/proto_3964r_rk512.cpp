@@ -92,25 +92,13 @@ bool Proto_3964R_RK512::recv_db(uint8_t db_idx, uint8_t db_offset, uint16_t leng
     if (!send_dle() || recv_err)
         return false;
 
+    // convert BE to LE
     int l = length * 2;
-    for (int i=0 ; i<l ; i+=2)
-        data[i] = swap_(*((uint16_t*)&m_recv_buf[i + sizeof(rk512_reply_header_t)]));
-    /*memcpy(data, &m_recv_buf[sizeof(rk512_reply_header_t)],
-            length * 2);*/
+    for (int i=0 ; i<l ; ++i)
+        data[i] = swap_(*((uint16_t*)&m_recv_buf[i*2 + sizeof(rk512_reply_header_t)]));
 
     m_state = RK512_CONNECTED;
-    //QThread::msleep(500);
     return true;
-}
-
-void Proto_3964R_RK512::check_incompleted()
-{
-    uint8_t test;
-    if ((m_serial->recv(&test, 1) == 1) && (test = RK512_3964R_DLE))
-    {
-        test = RK512_3964R_NAK;
-        m_serial->send(&test, 1);
-    }
 }
 
 void Proto_3964R_RK512::calc_bcc(uint8_t* buf, uint32_t len)
@@ -133,7 +121,6 @@ bool Proto_3964R_RK512::check_bcc(uint8_t* buf, uint32_t len, uint8_t bcc_check)
 bool Proto_3964R_RK512::connect()
 {
     m_state = RK512_DISCONNECTED;
-    //check_incompleted();
     if (!send_start())
         return false;
     switch (get_dle())
@@ -147,13 +134,11 @@ bool Proto_3964R_RK512::connect()
         printf("Client has data!\n");
         send_dle();
         recv_reply(1024);
-        //QThread::msleep(300);
         m_state = RK512_RETRY;
         return false;
     case RK512_3964R_NAK:
         // приемник не готов к общению - требуется повторить попытку позже
         printf("Client dont ready!\n");
-        //QThread::msleep(300);
         m_state = RK512_RETRY;
         return false;
     default:
