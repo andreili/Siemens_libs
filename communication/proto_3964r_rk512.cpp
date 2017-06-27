@@ -17,7 +17,7 @@ uint16_t swap_(uint16_t v)
 
 bool Proto_3964R_RK512::send_db(uint8_t db_idx, uint8_t db_offset, uint16_t length, uint16_t* data)
 {
-    /*while (!connect() && (m_state == RK512_RETRY)) {}
+    while (!connect() && (m_state == RK512_RETRY)) {}
 
     m_state = RK512_SEND_ACTIVE;
     rk512_request_header_t* req_header = (rk512_request_header_t*)&m_send_buf;
@@ -31,8 +31,7 @@ bool Proto_3964R_RK512::send_db(uint8_t db_idx, uint8_t db_offset, uint16_t leng
     req_header->cpu_addr = RK512_CPU_ADDR_NO_FLAGS_ANY;
 
     // convert LE to BE
-    int l = length * 2;
-    for (int i=0 ; i<l ; ++i)
+    for (int i=0 ; i<length ; ++i)
         *((uint16_t*)&m_send_buf[i*2 + sizeof(rk512_request_header_t)]) = swap_(data[i]);
 
     m_send_buf[sizeof(rk512_request_header_t) + length * 2] = RK512_3964R_DLE;
@@ -93,8 +92,7 @@ bool Proto_3964R_RK512::recv_db(uint8_t db_idx, uint8_t db_offset, uint16_t leng
         return false;
 
     // convert BE to LE
-    int l = length * 2;
-    for (int i=0 ; i<l ; ++i)
+    for (int i=0 ; i<length ; ++i)
         data[i] = swap_(*((uint16_t*)&m_recv_buf[i*2 + sizeof(rk512_reply_header_t)]));
 
     m_state = RK512_CONNECTED;
